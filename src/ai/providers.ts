@@ -102,24 +102,36 @@ function chat(
   })
 }
 
+/** A streamed part; only `type: 'text'` parts are the answer (others are reasoning, tool calls…). */
 interface PuterChunk {
+  type?: string
   text?: string
+}
+interface PuterUser {
+  username: string
 }
 declare global {
   interface Window {
     puter?: {
       ai: {
         chat: (
-          prompt: string,
-          opts: { stream: true; model?: string },
+          messages: { role: 'system' | 'user'; content: string }[],
+          opts: { stream: true; signal?: AbortSignal },
         ) => Promise<AsyncIterable<PuterChunk>>
+      }
+      auth: {
+        signIn: () => Promise<unknown>
+        signOut: () => void
+        isSignedIn: () => boolean
+        getUser: () => Promise<PuterUser>
       }
     }
   }
 }
 
 let puterLoading: Promise<void> | null = null
-function loadPuter(): Promise<void> {
+/** Loads Puter.js once, on demand: it is a third-party script, so the app never loads it unless asked. */
+export function loadPuter(): Promise<void> {
   puterLoading ??= new Promise((resolve, reject) => {
     const s = document.createElement('script')
     s.src = 'https://js.puter.com/v2/'
@@ -159,15 +171,22 @@ export const providers: Provider[] = [
     id: 'puter',
     label: 'Puter',
     blurb:
-      'Free for you: Puter runs the model on your own Puter account. A Puter sign-in window opens the first time.',
+      'Free for you: Puter runs the model on your own free Puter account. Connect it once below.',
     offered: () => true,
-    ready: () => true,
-    async *run(action, input) {
+    ready: () => window.puter?.auth.isSignedIn() ?? false,
+    async *run(action, input, signal) {
       await loadPuter()
       if (!window.puter) throw new Error('Puter did not load.')
       const { system, prompt } = buildPrompt(action, input)
-      const stream = await window.puter.ai.chat(`${system}\n\n${prompt}`, { stream: true })
-      for await (const part of stream) if (part.text) yield part.text
+      const stream = await window.puter.ai.chat(
+        [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        { stream: true, signal },
+      )
+      for await (const part of stream)
+        if ((part.type ?? 'text') === 'text' && part.text) yield part.text
     },
   },
   {
