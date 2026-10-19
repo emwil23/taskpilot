@@ -1,1 +1,5 @@
-/* /index.html 200
+# The app has no prerendered HTML: serve the plain shell. Unknown paths get 404.html (the same shell),
+# where the router shows the designed 404 page.
+/app      /app.html  200
+/app/*    /app.html  200
+/settings /app.html  200

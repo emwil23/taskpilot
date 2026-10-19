@@ -10,6 +10,8 @@ const dist = new URL('../dist/', import.meta.url)
 
 // app.html is the untouched shell (emitted by vite.config.ts); index.html gets overwritten below.
 const shell = await readFile(new URL('app.html', dist), 'utf8')
+// Cloudflare Pages serves 404.html for unknown paths; the router renders the 404 page into it.
+await writeFile(new URL('404.html', dist), shell)
 
 // The page is fully readable from the HTML, so start the app's JS just after the first frame is painted
 // instead of competing with it. Hydration then attaches to the same DOM.
