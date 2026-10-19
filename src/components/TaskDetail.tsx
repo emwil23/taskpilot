@@ -55,15 +55,23 @@ function Body({ task, close }: { task: Task; close: () => void }) {
       goal: task.title,
       ...(task.notes && { context: task.notes.slice(0, 500) }),
     })
-    if (items.length === 0) return
+    // Models sometimes repeat a step, and running it twice shouldn't double the list: skip known titles.
+    const seen = new Set(task.subtasks.map((s) => s.title.trim().toLowerCase()))
+    const fresh = items.filter((i) => {
+      const key = i.title.trim().toLowerCase()
+      if (!key || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    if (fresh.length === 0) return
     save({
       subtasks: [
         ...task.subtasks,
-        ...items.map((i) => ({ id: uid(), title: i.title, done: false })),
+        ...fresh.map((i) => ({ id: uid(), title: i.title.trim(), done: false })),
       ],
-      estimateMin: task.estimateMin ?? items.reduce((sum, i) => sum + (i.estimateMin || 0), 0),
+      estimateMin: task.estimateMin ?? fresh.reduce((sum, i) => sum + (i.estimateMin || 0), 0),
     })
-    toast.success(`Added ${items.length} subtasks`)
+    toast.success(`Added ${fresh.length} subtasks`)
   }
 
   async function runRewrite() {

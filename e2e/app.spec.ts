@@ -96,6 +96,7 @@ test('AI: break a goal into subtasks with your own key (mocked)', async ({ page 
     const lines = [
       { title: 'Pick a domain', estimateMin: 15 },
       { title: 'Write the about page', estimateMin: 60 },
+      { title: 'Pick a domain', estimateMin: 15 },
     ].map(
       (o) =>
         `data: ${JSON.stringify({ choices: [{ delta: { content: JSON.stringify(o) + '\n' } }] })}\n\n`,
@@ -114,7 +115,7 @@ test('AI: break a goal into subtasks with your own key (mocked)', async ({ page 
   await page.getByRole('button', { name: 'Launch my portfolio' }).click()
   await page.getByRole('button', { name: /break into subtasks/i }).click()
   await expect(page.getByRole('checkbox', { name: 'Write the about page' })).toBeVisible()
-  await expect(page.getByRole('checkbox', { name: 'Pick a domain' })).toBeVisible()
+  await expect(page.getByRole('checkbox', { name: 'Pick a domain' })).toHaveCount(1)
 })
 
 test('focus: the timer starts and pauses', async ({ page }) => {
