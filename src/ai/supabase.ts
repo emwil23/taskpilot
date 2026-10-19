@@ -39,6 +39,14 @@ export async function sendMagicLink(email: string) {
   if (error) throw error
 }
 
+/** The code in the same email, for when the link opens in another browser or device. */
+export async function verifyEmailCode(email: string, code: string) {
+  const sb = await getSupabase()
+  if (!sb) throw new Error('Sign-in is not set up.')
+  const { error } = await sb.auth.verifyOtp({ email, token: code, type: 'email' })
+  if (error) throw error
+}
+
 export async function confirmAdult() {
   const sb = await getSupabase()
   const { error } = (await sb?.auth.updateUser({ data: { adult: true } })) ?? {}

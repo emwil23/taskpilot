@@ -174,3 +174,35 @@ for (const path of PAGES) {
     })
   }
 }
+
+test('free AI sign-in: the emailed code signs you in on this device', async ({ page }) => {
+  await page.goto('/settings')
+  const ew = page.getByRole('radio', { name: /TaskPilot AI/ })
+  test.skip(await ew.isDisabled(), 'Built without Supabase settings')
+  const user = {
+    id: '00000000-0000-4000-8000-000000000001',
+    aud: 'authenticated',
+    email: 'pilot@example.com',
+    user_metadata: { adult: true },
+  }
+  await page.route('**/auth/v1/otp*', (r) => r.fulfill({ json: {} }))
+  await page.route('**/auth/v1/verify*', (r) =>
+    r.fulfill({
+      json: {
+        access_token: 'test-access',
+        token_type: 'bearer',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        refresh_token: 'test-refresh',
+        user,
+      },
+    }),
+  )
+  await page.route('**/auth/v1/user*', (r) => r.fulfill({ json: user }))
+  await ew.click()
+  await page.getByLabel(/sign in by email/i).fill('pilot@example.com')
+  await page.getByRole('button', { name: 'Email me' }).click()
+  await page.getByLabel(/type the code/i).fill('123456')
+  await page.getByRole('button', { name: 'Verify' }).click()
+  await expect(page.getByText('Signed in. 30 free AI calls a day.')).toBeVisible()
+})

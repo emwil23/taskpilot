@@ -1,6 +1,13 @@
 import { finishOpenRouterAuth, openRouterPending, startOpenRouterAuth } from '@/ai/openrouter'
 import { inBlockedRegion, providers } from '@/ai/providers'
-import { confirmAdult, getSupabase, isAdult, sendMagicLink, signOut } from '@/ai/supabase'
+import {
+  confirmAdult,
+  getSupabase,
+  isAdult,
+  sendMagicLink,
+  signOut,
+  verifyEmailCode,
+} from '@/ai/supabase'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import { SHORTCUTS } from '@/hooks/useShortcuts'
@@ -219,6 +226,8 @@ function NumberField({
 function ProviderSetup({ provider }: { provider: ProviderId | null }) {
   const s = useSettings()
   const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [code, setCode] = useState('')
   const [signedIn, setSignedIn] = useState(false)
   const [adult, setAdult] = useState(false)
 
@@ -244,20 +253,20 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
   if (provider === 'ew')
     return (
       <div className="border-line mt-6 max-w-lg rounded-2xl border p-4">
-        {!signedIn ? (
+        {!signedIn && !sent ? (
           <form
             className="flex flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault()
               sendMagicLink(email)
-                .then(() => toast.success('Check your email for a sign-in link'))
+                .then(() => setSent(true))
                 .catch((err: unknown) =>
-                  toast.error(err instanceof Error ? err.message : 'Could not send the link'),
+                  toast.error(err instanceof Error ? err.message : 'Could not send the email'),
                 )
             }}
           >
             <label htmlFor="ew-email" className="text-sm">
-              Sign in with a one-time email link (used only to count your daily AI calls):
+              Sign in by email (used only to count your daily AI calls):
             </label>
             <div className="flex gap-2">
               <input
@@ -270,9 +279,51 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
                 autoComplete="email"
               />
               <Button type="submit" variant="primary">
-                Send link
+                Email me
               </Button>
             </div>
+          </form>
+        ) : !signedIn ? (
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={(e) => {
+              e.preventDefault()
+              verifyEmailCode(email, code.trim())
+                .then(() => toast.success('Signed in'))
+                .catch(() => toast.error('That code is wrong or has expired. Request a new one.'))
+            }}
+          >
+            <label htmlFor="ew-code" className="text-sm">
+              We emailed {email}. Open the link on this device, or type the code from the email
+              here:
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="ew-code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6,10}"
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                className={`${input} font-mono tracking-[0.3em]`}
+              />
+              <Button type="submit" variant="primary">
+                Verify
+              </Button>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="self-start"
+              onClick={() => {
+                setSent(false)
+                setCode('')
+              }}
+            >
+              Use a different email
+            </Button>
           </form>
         ) : adult ? (
           <div className="flex items-center justify-between gap-3 text-sm">
