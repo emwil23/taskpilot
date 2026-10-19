@@ -4,10 +4,13 @@ import {
   addPasskey,
   confirmAdult,
   countPasskeys,
+  deleteAccount,
+  googleEnabled,
   getSupabase,
   isAdult,
   passkeysSupported,
   sendMagicLink,
+  signInWithGoogle,
   signInWithPasskey,
   signOut,
   verifyEmailCode,
@@ -19,7 +22,7 @@ import { cn } from '@/lib/cn'
 import { exportAll, importAll } from '@/lib/backup'
 import { useSettings, type ProviderId, type Theme } from '@/stores/settings'
 import { Link } from '@tanstack/react-router'
-import { Download, KeyRound, Monitor, Moon, Sun, Upload } from 'lucide-react'
+import { Download, KeyRound, Monitor, Moon, Sun, Trash2, Upload } from 'lucide-react'
 import { useEffect, useId, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 
@@ -247,7 +250,9 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
       // Fires once straight away with the current session, then on every sign-in or sign-out.
       const { data } = sb.auth.onAuthStateChange((_event, session) => {
         setSignedIn(Boolean(session))
-        void isAdult().then(setAdult)
+        void isAdult()
+          .then(setAdult)
+          .catch(() => setAdult(false))
         if (session) void countPasskeys().then(setPasskeys)
       })
       unsubscribe = () => data.subscription.unsubscribe()
@@ -279,10 +284,20 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
               <KeyRound /> I have a passkey
             </Button>
             <p className="text-muted text-xs">
-              Face ID, fingerprint, Windows Hello or your password manager. Works on any browser
-              once you've added one.
+              New here? Sign in below first, then add a passkey (Face ID, fingerprint, Windows Hello
+              or a password manager) to skip the email next time.
             </p>
           </div>
+        )}
+        {!signedIn && googleEnabled && (
+          <Button
+            className="mb-4"
+            onClick={() =>
+              void signInWithGoogle().catch(() => toast.error('Google sign-in did not start.'))
+            }
+          >
+            Continue with Google
+          </Button>
         )}
         {!signedIn && !sent ? (
           <form
@@ -396,11 +411,35 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
             <Button
               variant="primary"
               className="self-start"
-              onClick={() => void confirmAdult().then(() => setAdult(true))}
+              onClick={() =>
+                void confirmAdult()
+                  .then(() => setAdult(true))
+                  .catch(() => toast.error('Could not save that. Please try again.'))
+              }
             >
               I am 18 or older
             </Button>
           </div>
+        )}
+        {signedIn && (
+          <Button
+            variant="danger"
+            size="sm"
+            className="mt-4"
+            onClick={() => {
+              if (
+                !confirm(
+                  'Delete your EW account? Your sign-in, passkeys and AI usage are removed from our server for every EW app. Tasks stay in this browser.',
+                )
+              )
+                return
+              deleteAccount()
+                .then(() => toast.success('Account deleted'))
+                .catch(() => toast.error('Could not delete the account. Please try again.'))
+            }}
+          >
+            <Trash2 /> Delete my account
+          </Button>
         )}
       </div>
     )

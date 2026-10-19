@@ -27,10 +27,25 @@ export async function getAccessToken(): Promise<string | null> {
   return data.session?.access_token ?? null
 }
 
+const API_URL = import.meta.env.VITE_API_URL as string | undefined
+
+/** Calls the shared EW account API as the signed-in user. */
+async function me(method: 'GET' | 'POST' | 'DELETE', path = '') {
+  const token = await getAccessToken()
+  if (!token || !API_URL) throw new Error('Please sign in first.')
+  const res = await fetch(`${API_URL}/api/me${path}`, {
+    method,
+    headers: { authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) throw new Error(`Account request failed (${res.status}).`)
+  return res
+}
+
+/** Whether the user has confirmed they are 18+. Kept by the server, where users can't change it. */
 export async function isAdult(): Promise<boolean> {
-  const sb = await getSupabase()
-  const { data } = (await sb?.auth.getUser()) ?? { data: { user: null } }
-  return (data.user?.user_metadata as { adult?: boolean } | undefined)?.adult === true
+  if (!(await getAccessToken())) return false
+  const body = (await (await me('GET')).json()) as { adult?: boolean }
+  return body.adult === true
 }
 
 export async function sendMagicLink(email: string) {
@@ -52,8 +67,25 @@ export async function verifyEmailCode(email: string, code: string) {
 }
 
 export async function confirmAdult() {
+  await me('POST', '/adult')
+}
+
+/** Deletes the account everywhere (all EW apps), then signs out. Tasks in this browser are untouched. */
+export async function deleteAccount() {
+  await me('DELETE')
+  await signOut()
+}
+
+/** "Continue with Google" is shown once the Google provider is set up in Supabase. */
+export const googleEnabled = import.meta.env.VITE_GOOGLE_SIGNIN === '1'
+
+export async function signInWithGoogle() {
   const sb = await getSupabase()
-  const { error } = (await sb?.auth.updateUser({ data: { adult: true } })) ?? {}
+  if (!sb) throw new Error('Sign-in is not set up.')
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: `${location.origin}/settings` },
+  })
   if (error) throw error
 }
 

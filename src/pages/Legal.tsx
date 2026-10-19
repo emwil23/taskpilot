@@ -48,8 +48,10 @@ export function Privacy() {
           </strong>
           , so don't put personal or sensitive details in task titles you send to the AI. You sign
           in with an email link (Supabase) so we can count your daily calls; we store your email, a
-          user id and a per-day call count, and nothing else. This option is not offered in the EEA,
-          the UK or Switzerland, or to anyone under 18.
+          user id, the date you confirmed you're 18 or over, a per-day call count and, if you add
+          one, your passkey's public key. Nothing else. You can delete all of it any time from
+          Settings. This option is not offered in the EEA, the UK or Switzerland, or to anyone under
+          18.
         </li>
         <li>
           <strong>Puter</strong>, <strong>OpenRouter</strong> and <strong>your own key</strong> send

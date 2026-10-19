@@ -212,6 +212,7 @@ test('free AI sign-in: the emailed code signs you in on this device', async ({ p
     }),
   )
   await page.route('**/auth/v1/user*', (r) => r.fulfill({ json: user }))
+  await page.route('**/api/me', (r) => r.fulfill({ json: { adult: true } }))
   await ew.click()
   await page.getByLabel(/sign in by email/i).fill('pilot@example.com')
   await page.getByRole('button', { name: 'Email me' }).click()
