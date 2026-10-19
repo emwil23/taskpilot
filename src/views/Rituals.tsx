@@ -139,7 +139,7 @@ export function EveningReview({ open, onOpenChange }: RitualProps) {
             aria-live="polite"
             className="border-line bg-bg mt-4 rounded-xl border p-4 text-sm leading-relaxed whitespace-pre-wrap"
           >
-            {ai.text.replace(/\*\*/g, '')}
+            {ai.text.replace(/\*\*/g, '').trim()}
           </div>
         )}
         <div className="mt-6 flex justify-end">
