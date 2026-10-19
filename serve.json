@@ -1,8 +1,8 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/app", "destination": "/app.html" },
-    { "source": "/app/**", "destination": "/app.html" },
-    { "source": "/settings", "destination": "/app.html" }
+    { "source": "/app", "destination": "/shell/index.html" },
+    { "source": "/app/**", "destination": "/shell/index.html" },
+    { "source": "/settings", "destination": "/shell/index.html" }
   ]
 }

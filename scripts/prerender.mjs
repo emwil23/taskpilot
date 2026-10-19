@@ -8,15 +8,15 @@ import { preview } from 'vite'
 const ROUTES = ['/', '/developer', '/pro', '/privacy', '/terms']
 const dist = new URL('../dist/', import.meta.url)
 
-// app.html is the untouched shell (emitted by vite.config.ts); index.html gets overwritten below.
-const shell = await readFile(new URL('app.html', dist), 'utf8')
+// shell/index.html is the untouched shell (emitted by vite.config.ts); index.html gets overwritten below.
+const shell = await readFile(new URL('shell/index.html', dist), 'utf8')
 // Cloudflare Pages serves 404.html for unknown paths; the router renders the 404 page into it.
 await writeFile(new URL('404.html', dist), shell)
 
 // The page is fully readable from the HTML, so start the app's JS just after the first frame is painted
 // instead of competing with it. Hydration then attaches to the same DOM.
 const entry = shell.match(/<script type="module" crossorigin src="([^"]+)"><\/script>/)?.[1]
-if (!entry) throw new Error('Entry script not found in app.html')
+if (!entry) throw new Error('Entry script not found in shell/index.html')
 const template = shell
   .replace(/\s*<link rel="modulepreload"[^>]*>/g, '')
   .replace(

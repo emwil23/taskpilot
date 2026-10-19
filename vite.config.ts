@@ -16,7 +16,7 @@ export default defineConfig({
       generateBundle(_, bundle) {
         const html = bundle['index.html']
         if (html.type === 'asset')
-          this.emitFile({ type: 'asset', fileName: 'app.html', source: html.source })
+          this.emitFile({ type: 'asset', fileName: 'shell/index.html', source: html.source })
       },
     },
     tailwindcss(),
@@ -40,10 +40,10 @@ export default defineConfig({
         shortcuts: [{ name: 'Quick add', url: '/app/inbox?add=1' }],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,svg,woff2,avif,webp,png}', 'app.html'],
+        globPatterns: ['**/*.{js,css,svg,woff2,avif,webp,png}', 'shell/index.html'],
         // The hero video and the 3D bundle are landing-page extras; don't make every install download them.
         globIgnores: ['**/media/*.mp4', '**/media/*.webm', '**/Hero3D-*.js'],
-        navigateFallback: '/app.html',
+        navigateFallback: '/shell/index.html',
       },
     }),
   ],

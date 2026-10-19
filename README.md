@@ -119,7 +119,7 @@ flowchart LR
     H --> CF[Cloudflare Pages]
     CF --> FP[First paint<br/>from HTML]
     FP -->|after 2 frames| HY[hydrateRoot]
-    CF -->|"/app/*"| SH[app.html shell<br/>createRoot]
+    CF -->|"/app/*"| SH[shell/index.html<br/>createRoot]
 ```
 
 ## Decisions worth explaining
