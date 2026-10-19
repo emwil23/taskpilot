@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseQuickAdd } from './quickAdd'
+import { parseQuickAdd, removeToken } from './quickAdd'
 
 // Monday 20 October 2026, 09:00 local time.
 const now = new Date(2026, 9, 19 + 1, 9, 0)
@@ -41,10 +41,22 @@ describe('parseQuickAdd', () => {
 
   it('leaves plain text alone', () => {
     const t = parseQuickAdd('Buy oat milk', now)
-    expect(t).toMatchObject({ title: 'Buy oat milk', tokens: [] })
+    expect(t).toMatchObject({ title: 'Buy oat milk', tokens: {} })
   })
 
   it('does not treat words like "p10" or emails as tokens', () => {
     expect(parseQuickAdd('Read p10 notes', now).priority).toBe(4)
+  })
+})
+
+describe('removeToken', () => {
+  it('drops the text a field came from, so the parser forgets it', () => {
+    const input = 'Call mom at 11 p1 #Family'
+    const t = parseQuickAdd(input, now)
+    expect(t.tokens.date).toBe('at 11')
+    const without = removeToken(input, t.tokens.date ?? '')
+    expect(without).toBe('Call mom p1 #Family')
+    expect(parseQuickAdd(without, now).scheduled).toBeNull()
+    expect(removeToken(without, t.tokens.project ?? '')).toBe('Call mom p1')
   })
 })

@@ -40,6 +40,19 @@ test('quick add parses natural language into a scheduled task', async ({ page })
   await expect(page.getByRole('navigation', { name: 'Projects' })).toContainText('Work')
 })
 
+test('quick add: clicking a chip removes what it stands for', async ({ page }) => {
+  await page.goto('/app/inbox')
+  await page.getByRole('heading', { level: 1 }).waitFor()
+  await page.keyboard.press('q')
+  const box = page.getByLabel('Task', { exact: true })
+  await box.fill('call mom at 11 p2')
+  await page.getByRole('button', { name: /remove the date/i }).click()
+  await expect(box).toHaveValue('call mom p2')
+  await expect(page.getByRole('button', { name: /remove the date/i })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /remove the priority/i })).toBeVisible()
+  await expect(box).toBeFocused()
+})
+
 test('keyboard: j moves, x completes, the task moves to the Logbook', async ({ page }) => {
   await page.goto('/app/today')
   await quickAdd(page, 'Water the plants today')

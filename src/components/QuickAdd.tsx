@@ -2,11 +2,11 @@ import { useProjects } from '@/hooks/data'
 import { cn } from '@/lib/cn'
 import { dayKey, duration, relativeDay } from '@/lib/dates'
 import type { Task } from '@/lib/db'
-import { parseQuickAdd } from '@/lib/quickAdd'
+import { parseQuickAdd, removeToken, type TokenKind } from '@/lib/quickAdd'
 import { addParsed } from '@/lib/tasks'
 import { useUi } from '@/stores/ui'
 import { useRouterState } from '@tanstack/react-router'
-import { CalendarDays, Flag, Folder, Mic, MicOff, Timer } from 'lucide-react'
+import { CalendarDays, Flag, Folder, Mic, MicOff, Timer, X } from 'lucide-react'
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { Button } from './ui/button'
@@ -39,6 +39,11 @@ export function QuickAdd() {
   const path = useRouterState({ select: (s) => s.location.pathname })
 
   const parsed = useMemo(() => parseQuickAdd(text), [text])
+  const drop = (kind: TokenKind) => {
+    const token = parsed.tokens[kind]
+    if (token) setText(removeToken(text, token))
+    document.getElementById('quick-add')?.focus()
+  }
   const projectExists = projects?.some(
     (p) => p.name.toLowerCase() === parsed.projectName?.toLowerCase(),
   )
@@ -126,22 +131,38 @@ export function QuickAdd() {
 
           <div className="mt-3 flex min-h-7 flex-wrap gap-2 text-xs" aria-live="polite">
             {parsed.scheduled && (
-              <Chip icon={<CalendarDays />}>
+              <Chip icon={<CalendarDays />} what="date" onRemove={() => drop('date')}>
                 {relativeDay(parsed.scheduled)}
                 {parsed.at &&
                   ` ${parsed.at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
               </Chip>
             )}
-            {parsed.due && <Chip icon={<CalendarDays />}>Due {relativeDay(parsed.due)}</Chip>}
-            {parsed.priority < 4 && <Chip icon={<Flag />}>P{parsed.priority}</Chip>}
+            {parsed.due && (
+              <Chip icon={<CalendarDays />} what="deadline" onRemove={() => drop('date')}>
+                Due {relativeDay(parsed.due)}
+              </Chip>
+            )}
+            {parsed.priority < 4 && (
+              <Chip icon={<Flag />} what="priority" onRemove={() => drop('priority')}>
+                P{parsed.priority}
+              </Chip>
+            )}
             {parsed.projectName && (
-              <Chip icon={<Folder />}>
+              <Chip icon={<Folder />} what="project" onRemove={() => drop('project')}>
                 {parsed.projectName}
                 {!projectExists && ' (new)'}
               </Chip>
             )}
-            {parsed.estimateMin && <Chip icon={<Timer />}>{duration(parsed.estimateMin)}</Chip>}
-            {parsed.someday && <Chip>Someday</Chip>}
+            {parsed.estimateMin && (
+              <Chip icon={<Timer />} what="estimate" onRemove={() => drop('estimate')}>
+                {duration(parsed.estimateMin)}
+              </Chip>
+            )}
+            {parsed.someday && (
+              <Chip what="someday" onRemove={() => drop('someday')}>
+                Someday
+              </Chip>
+            )}
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3">
@@ -156,11 +177,29 @@ export function QuickAdd() {
   )
 }
 
-function Chip({ icon, children }: { icon?: ReactNode; children: ReactNode }) {
+/** One understood part of the text. Clicking it takes that part out, e.g. to drop a wrongly guessed date. */
+function Chip({
+  icon,
+  what,
+  onRemove,
+  children,
+}: {
+  icon?: ReactNode
+  what: string
+  onRemove: () => void
+  children: ReactNode
+}) {
   return (
-    <span className="border-line bg-surface-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 [&_svg]:size-3.5">
+    <button
+      type="button"
+      onClick={onRemove}
+      title={`Remove the ${what}`}
+      className="group border-line bg-surface-2 hover:border-danger/60 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors [&_svg]:size-3.5"
+    >
       {icon}
       {children}
-    </span>
+      <X className="text-muted group-hover:text-danger" aria-hidden />
+      <span className="sr-only">: remove the {what}</span>
+    </button>
   )
 }
