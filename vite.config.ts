@@ -51,6 +51,9 @@ export default defineConfig({
         shortcuts: [{ name: 'Quick add', url: '/app/inbox?add=1' }],
       },
       workbox: {
+        // Take over as soon as a new version installs, so a deploy reaches open tabs on their next load.
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,svg,woff2,avif,webp,png}', 'shell/index.html'],
         // The hero video and the 3D bundle are landing-page extras; don't make every install download them.
         globIgnores: ['**/media/*.mp4', '**/media/*.webm', '**/Hero3D-*.js'],
