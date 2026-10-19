@@ -1,10 +1,14 @@
 import { finishOpenRouterAuth, openRouterPending, startOpenRouterAuth } from '@/ai/openrouter'
 import { inBlockedRegion, providers } from '@/ai/providers'
 import {
+  addPasskey,
   confirmAdult,
+  countPasskeys,
   getSupabase,
   isAdult,
+  passkeysSupported,
   sendMagicLink,
+  signInWithPasskey,
   signOut,
   verifyEmailCode,
 } from '@/ai/supabase'
@@ -15,7 +19,7 @@ import { cn } from '@/lib/cn'
 import { exportAll, importAll } from '@/lib/backup'
 import { useSettings, type ProviderId, type Theme } from '@/stores/settings'
 import { Link } from '@tanstack/react-router'
-import { Download, Monitor, Moon, Sun, Upload } from 'lucide-react'
+import { Download, KeyRound, Monitor, Moon, Sun, Upload } from 'lucide-react'
 import { useEffect, useId, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 
@@ -227,6 +231,7 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
   const s = useSettings()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [passkeys, setPasskeys] = useState<number | null>(null)
   const [code, setCode] = useState('')
   const [signedIn, setSignedIn] = useState(false)
   const [adult, setAdult] = useState(false)
@@ -241,6 +246,7 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
       const { data } = sb.auth.onAuthStateChange((_event, session) => {
         setSignedIn(Boolean(session))
         void isAdult().then(setAdult)
+        if (session) void countPasskeys().then(setPasskeys)
       })
       unsubscribe = () => data.subscription.unsubscribe()
     })
@@ -253,6 +259,25 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
   if (provider === 'ew')
     return (
       <div className="border-line mt-6 max-w-lg rounded-2xl border p-4">
+        {!signedIn && passkeysSupported() && (
+          <div className="border-line mb-4 flex flex-col gap-2 border-b pb-4">
+            <Button
+              variant="primary"
+              className="self-start"
+              onClick={() =>
+                void signInWithPasskey()
+                  .then(() => toast.success('Signed in'))
+                  .catch(() => toast.error('No passkey was used. Sign in by email below.'))
+              }
+            >
+              <KeyRound /> Sign in with a passkey
+            </Button>
+            <p className="text-muted text-xs">
+              Face ID, fingerprint, Windows Hello or your password manager. Works on any browser
+              once you've added one.
+            </p>
+          </div>
+        )}
         {!signedIn && !sent ? (
           <form
             className="flex flex-col gap-3"
@@ -326,11 +351,38 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
             </Button>
           </form>
         ) : adult ? (
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-go">Signed in. 30 free AI calls a day.</span>
-            <Button variant="ghost" size="sm" onClick={() => void signOut()}>
-              Sign out
-            </Button>
+          <div className="flex flex-col gap-3 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-go">Signed in. 30 free AI calls a day.</span>
+              <Button variant="ghost" size="sm" onClick={() => void signOut()}>
+                Sign out
+              </Button>
+            </div>
+            {passkeysSupported() && passkeys === 0 && (
+              <div className="border-sky/30 bg-sky/10 flex flex-wrap items-center gap-3 rounded-xl border p-3">
+                <p className="flex-1">Skip the email next time: add a passkey.</p>
+                <Button
+                  variant="ai"
+                  size="sm"
+                  onClick={() =>
+                    void addPasskey()
+                      .then(() => {
+                        setPasskeys(1)
+                        toast.success('Passkey added')
+                      })
+                      .catch(() => toast.error('The passkey was not saved.'))
+                  }
+                >
+                  <KeyRound /> Add a passkey
+                </Button>
+              </div>
+            )}
+            {Boolean(passkeys) && (
+              <p className="text-muted">
+                {passkeys} passkey{passkeys === 1 ? '' : 's'} saved. Use it to sign in on any
+                browser.
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-3 text-sm">
