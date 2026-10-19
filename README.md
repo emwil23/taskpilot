@@ -6,7 +6,7 @@
 
 A keyboard-first task manager that works offline. Type a task the way you'd say it, let the co-pilot time-block your calendar, then work through it in focus sessions. Your tasks never leave your browser.
 
-**Live demo: coming soon on Cloudflare Pages** · [The shared API](https://github.com/emwil23/ew-apps-api)
+**[taskpilot-dbc.pages.dev](https://taskpilot-dbc.pages.dev)** · [The shared API](https://github.com/emwil23/ew-apps-api)
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square)
