@@ -1,3 +1,4 @@
+import { LoopVideo } from '@/components/LoopVideo'
 import { Button } from '@/components/ui/button'
 import { prerendered, useReducedMotionSafe } from '@/lib/boot'
 import { cn } from '@/lib/cn'
@@ -47,46 +48,36 @@ export function Landing() {
 
   return (
     <>
-      <Hero can3D={can3D} reduce={reduce} />
+      <Hero can3D={can3D} />
       <FlightPath animate={!reduce} />
       <Bento />
-      <AiSection />
+      <AiSection reduce={reduce} />
       <Pricing />
       <DeveloperCard />
     </>
   )
 }
 
-function Hero({ can3D, reduce }: { can3D: boolean; reduce: boolean }) {
+function Hero({ can3D }: { can3D: boolean }) {
   return (
     <section
       aria-labelledby="hero-h"
       className="relative flex min-h-dvh items-center overflow-hidden pt-28 pb-16"
     >
       <div className="grid-lines pointer-events-none absolute inset-0 opacity-70" aria-hidden />
-      {/* The pilot: Emmanuel's character in the cockpit, catching task cards. */}
+      {/* Glass task cards on a flight path. On wide screens with a GPU the live 3D scene fades in over it. */}
       <div className="pointer-events-none absolute inset-y-0 right-0 w-full md:w-[62%]" aria-hidden>
-        {reduce ? (
-          <img
-            src="/media/hero.webp"
-            alt=""
-            className="h-full w-full object-cover opacity-70"
-            fetchPriority="high"
-          />
-        ) : (
-          <video
-            className="h-full w-full object-cover opacity-70"
-            poster="/media/hero.webp"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          >
-            <source src="/media/hero.webm" type="video/webm" />
-            <source src="/media/hero.mp4" type="video/mp4" />
-          </video>
-        )}
+        <img
+          src="/media/hero.webp"
+          alt=""
+          width={1376}
+          height={768}
+          fetchPriority="high"
+          className={cn(
+            'h-full w-full object-cover transition-opacity duration-1000',
+            can3D ? 'opacity-0' : 'opacity-80',
+          )}
+        />
         <div className="from-bg via-bg/60 absolute inset-0 bg-gradient-to-r to-transparent" />
         <div className="from-bg to-bg/40 absolute inset-0 bg-gradient-to-t via-transparent" />
       </div>
@@ -271,7 +262,7 @@ const AI_ACTIONS = [
   },
 ]
 
-function AiSection() {
+function AiSection({ reduce }: { reduce: boolean }) {
   return (
     <section
       aria-labelledby="ai-h"
@@ -290,6 +281,13 @@ function AiSection() {
             Use our free server, or bring your own: Puter, OpenRouter or any OpenAI-compatible key.
             Only task titles, times and priorities are sent. Never notes. Never paywalled.
           </p>
+          <LoopVideo
+            src="/media/hero"
+            poster="/media/hero.webp"
+            label="A paper plane flying a glowing orange flight path through floating glass task cards"
+            reduce={reduce}
+            className="border-line mt-10 aspect-video w-full rounded-3xl border"
+          />
         </div>
         <ul className="grid gap-3 sm:grid-cols-2">
           {AI_ACTIONS.map((a) => (

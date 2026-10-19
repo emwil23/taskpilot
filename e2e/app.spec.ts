@@ -1,6 +1,18 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 
+// Skip the first-run tour, except in the test that covers it.
+test.beforeEach(async ({ page }, info) => {
+  if (info.title.includes('first run')) return
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('taskpilot-settings'))
+      localStorage.setItem(
+        'taskpilot-settings',
+        JSON.stringify({ state: { onboarded: true }, version: 0 }),
+      )
+  })
+})
+
 async function quickAdd(page: Page, text: string) {
   // Wait until the lazy view has rendered, so the shortcut listener is live.
   await page.getByRole('heading', { level: 1 }).waitFor()
@@ -31,6 +43,7 @@ test('quick add parses natural language into a scheduled task', async ({ page })
 test('keyboard: j moves, x completes, the task moves to the Logbook', async ({ page }) => {
   await page.goto('/app/today')
   await quickAdd(page, 'Water the plants today')
+  await expect(page.locator('[data-task-id]').filter({ hasText: 'Water the plants' })).toBeVisible()
   await page.keyboard.press('j')
   await page.keyboard.press('x')
   await expect(page.getByText('Done today · 1')).toBeVisible()
@@ -97,6 +110,19 @@ test('focus: the timer starts and pauses', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible()
   await page.getByRole('button', { name: 'Pause' }).click()
   await expect(page.getByRole('button', { name: 'Resume' })).toBeVisible()
+})
+
+test('first run shows a three-step tour, once', async ({ page }) => {
+  await page.goto('/app/today')
+  const tour = page.getByRole('dialog')
+  await expect(tour).toContainText('Step 1 of 3')
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Start flying' }).click()
+  await expect(tour).toBeHidden()
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible()
+  await expect(page.getByRole('dialog')).toBeHidden()
 })
 
 test('unknown routes show the designed 404', async ({ page }) => {

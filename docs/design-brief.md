@@ -4,31 +4,31 @@ Made with the `awwwards` MCP (`search_sites`, `create_design_brief`) on 2026-10-
 
 ## References
 
-| Site | Award | What we take |
-| --- | --- | --- |
-| [Butter](https://www.butter.video/) | SOTD + Developer | Glossy 3D squircle tiles that float over a timeline. Our task cards become tiles like these in the hero. |
-| [Heron AI](https://heronaiapp.com/) | SOTD + Developer | An AI product told in a technical, drafting style: thin grid lines, `+` corner marks, mono labels, one hot orange accent. |
-| [Overworld Audio](https://overworldaudio.com/) | SOTD + Developer | A deep night-blue 3D world with small glowing markers. This sets the mood of our dark theme. |
-| [Lidar Drone Scanning](https://drone.riotters.com/) | SOTD + Developer | Scroll storytelling where the camera moves through a scene, and a cool grey-blue palette. |
+| Site                                                | Award            | What we take                                                                                                              |
+| --------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| [Butter](https://www.butter.video/)                 | SOTD + Developer | Glossy 3D squircle tiles that float over a timeline. Our task cards become tiles like these in the hero.                  |
+| [Heron AI](https://heronaiapp.com/)                 | SOTD + Developer | An AI product told in a technical, drafting style: thin grid lines, `+` corner marks, mono labels, one hot orange accent. |
+| [Overworld Audio](https://overworldaudio.com/)      | SOTD + Developer | A deep night-blue 3D world with small glowing markers. This sets the mood of our dark theme.                              |
+| [Lidar Drone Scanning](https://drone.riotters.com/) | SOTD + Developer | Scroll storytelling where the camera moves through a scene, and a cool grey-blue palette.                                 |
 
 ## The idea: a cockpit for your day
 
-The owner's character sits in a pilot seat. Task cards float around him like instruments, and he catches them and drops them onto a flight path (the day's timeline). The landing page is the drama; the app is a calm, quiet cockpit.
+Glossy glass task cards float like instruments and settle onto a glowing orange flight path (the day's timeline), with a small paper plane flying it. The landing page is the drama; the app is a calm, quiet cockpit. The owner's character appears only on the Meet the developer page.
 
 ## Palette
 
 Dark (default):
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `--bg` | `#0D1017` | page (night sky, after Overworld) |
-| `--surface` | `#151A23` | cards, sidebar |
-| `--line` | `#252C38` | grid lines, borders |
-| `--text` | `#E9ECEE` | body text (15.9:1 on bg) |
-| `--muted` | `#9AA4B2` | secondary text (7.6:1 on bg) |
-| `--accent` | `#FF6B3D` | signal orange: primary buttons, focus, "now" line (6.9:1 on bg) |
-| `--sky` | `#7CC4FF` | AI and links (10:1 on bg) |
-| `--go` | `#4ADE9A` | done, streaks |
+| Token       | Hex       | Use                                                             |
+| ----------- | --------- | --------------------------------------------------------------- |
+| `--bg`      | `#0D1017` | page (night sky, after Overworld)                               |
+| `--surface` | `#151A23` | cards, sidebar                                                  |
+| `--line`    | `#252C38` | grid lines, borders                                             |
+| `--text`    | `#E9ECEE` | body text (15.9:1 on bg)                                        |
+| `--muted`   | `#9AA4B2` | secondary text (7.6:1 on bg)                                    |
+| `--accent`  | `#FF6B3D` | signal orange: primary buttons, focus, "now" line (6.9:1 on bg) |
+| `--sky`     | `#7CC4FF` | AI and links (10:1 on bg)                                       |
+| `--go`      | `#4ADE9A` | done, streaks                                                   |
 
 Light: `--bg #F6F5F1` (paper), `--surface #FFFFFF`, `--text #13161C`, `--muted #556070`, `--accent #C2410C` (5.2:1 on paper), `--sky #0B6BB8`.
 
@@ -43,7 +43,7 @@ Eisenhower colours reuse accent, sky, go and muted, so the app stays to four hue
 
 ## Motion
 
-- **Hero (R3F + drei):** 8–12 rounded glass tiles (`RoundedBox` + `MeshTransmissionMaterial`) float with `Float`, with the pilot clip on a plane behind them. The tiles follow the pointer slightly. On low-power devices or reduced motion, we show the still image instead of the canvas.
+- **Hero (R3F + drei):** six rounded glass tiles (`RoundedBox` + a physical glass material) float with `Float` and tilt toward the pointer. On phones, software-rendered GPUs or reduced motion, the hero shows the generated still instead. The 8s clip plays in the AI section.
 - **Scroll (GSAP ScrollTrigger + Lenis):** one pinned "flight path" section where the tiles land in order on a timeline (quick add → today → board → focus → matrix → AI plan), with each step's copy fading in. Lines draw in with `scrub`.
 - **App (Motion):** layout animations for list moves and the board, 150–220ms, ease-out. There is no scroll-jacking in the app.
 - **Details:** grid lines and `+` corner marks, a mono clock in the header, and the orange "now" line on the calendar.

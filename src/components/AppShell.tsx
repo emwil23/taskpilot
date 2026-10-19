@@ -9,6 +9,7 @@ import { Command, Plus, Settings } from 'lucide-react'
 import { CommandPalette, ShortcutsDialog } from './CommandPalette'
 import { Logo } from './Logo'
 import { NAV } from './nav'
+import { Onboarding } from './Onboarding'
 import { QuickAdd } from './QuickAdd'
 import { TaskDetail } from './TaskDetail'
 import { Button } from './ui/button'
@@ -149,6 +150,7 @@ export function AppShell() {
       <CommandPalette />
       <ShortcutsDialog />
       <TaskDetail />
+      <Onboarding />
     </div>
   )
 }

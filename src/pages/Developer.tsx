@@ -1,4 +1,5 @@
 import { useReducedMotionSafe } from '@/lib/boot'
+import { LoopVideo } from '@/components/LoopVideo'
 import { Button } from '@/components/ui/button'
 import { ArrowUpRight, Globe } from 'lucide-react'
 
@@ -76,28 +77,13 @@ export function Developer() {
             className="from-accent/30 to-sky/30 absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br via-transparent blur-2xl"
             aria-hidden
           />
-          {reduce ? (
-            <img
-              src="/media/developer.webp"
-              alt="Emmanuel's 3D character, smiling, in a pilot jacket"
-              width={720}
-              height={900}
-              className="border-line relative aspect-[4/5] w-full rounded-[2rem] border object-cover"
-            />
-          ) : (
-            <video
-              className="border-line relative aspect-[4/5] w-full rounded-[2rem] border object-cover"
-              poster="/media/developer.webp"
-              autoPlay
-              muted
-              loop
-              playsInline
-              aria-label="Emmanuel's 3D character waving from the cockpit"
-            >
-              <source src="/media/developer-loop.webm" type="video/webm" />
-              <source src="/media/developer-loop.mp4" type="video/mp4" />
-            </video>
-          )}
+          <LoopVideo
+            src="/media/developer-loop"
+            poster="/media/developer.webp"
+            label="Emmanuel's 3D character in a pilot jacket, smiling and giving a small salute"
+            reduce={reduce}
+            className="border-line relative aspect-[4/5] w-full rounded-[2rem] border"
+          />
           <span className="hud border-line bg-surface absolute -bottom-4 left-6 rounded-full border px-3 py-1.5">
             Pilot · EWSTUDIOS
           </span>
