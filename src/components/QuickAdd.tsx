@@ -52,10 +52,11 @@ export function QuickAdd() {
     const project = /^\/app\/projects\/([^/]+)/.exec(path)?.[1]
     if (project) defaults.projectId = project
     if (path.startsWith('/app/someday')) defaults.someday = true
-    await addParsed(parsed, defaults)
-    toast.success(`Added "${parsed.title}"`)
+    // Clear first, so anything typed while saving starts a fresh task.
     setText('')
     if (!keepOpen) set({ quickAdd: false })
+    await addParsed(parsed, defaults)
+    toast.success(`Added "${parsed.title}"`)
   }
 
   function toggleVoice() {

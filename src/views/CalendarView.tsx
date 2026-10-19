@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/TaskRow'
 import { Button } from '@/components/ui/button'
 import { useAllTasks } from '@/hooks/data'
 import { cn } from '@/lib/cn'
+import { jumpToDropZone } from '@/lib/dndKeyboard'
 import { addDays, dayKey, fromDayKey, hhmm, relativeDay } from '@/lib/dates'
 import type { Task } from '@/lib/db'
 import { byOrder, inView, updateTask } from '@/lib/tasks'
@@ -53,7 +54,7 @@ export function CalendarView() {
   const ai = useAi('plan-day')
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: jumpToDropZone }),
   )
   const autoRan = useRef(false)
 

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import { jumpToDropZone } from '@/lib/dndKeyboard'
 import type { Task } from '@/lib/db'
 import { useUi } from '@/stores/ui'
 import {
@@ -35,7 +36,7 @@ export function DropBoard({
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: jumpToDropZone }),
   )
   const [active, setActive] = useState<Task | null>(null)
 
