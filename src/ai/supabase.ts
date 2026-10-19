@@ -81,8 +81,13 @@ export async function addPasskey() {
   if (error) throw error
 }
 
+/** How many passkeys the signed-in user has; 0 if that can't be read, so the app still offers to add one. */
 export async function countPasskeys(): Promise<number> {
-  const sb = await getSupabase()
-  const { data } = (await sb?.auth.passkey.list()) ?? { data: null }
-  return data?.length ?? 0
+  try {
+    const sb = await getSupabase()
+    const { data } = (await sb?.auth.passkey.list()) ?? { data: null }
+    return data?.length ?? 0
+  } catch {
+    return 0
+  }
 }

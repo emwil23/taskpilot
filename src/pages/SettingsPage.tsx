@@ -358,7 +358,7 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
                 Sign out
               </Button>
             </div>
-            {passkeysSupported() && passkeys === 0 && (
+            {passkeysSupported() && !passkeys && (
               <div className="border-sky/30 bg-sky/10 flex flex-wrap items-center gap-3 rounded-xl border p-3">
                 <p className="flex-1">Skip the email next time: add a passkey.</p>
                 <Button
