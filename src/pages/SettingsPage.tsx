@@ -269,10 +269,14 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
               onClick={() =>
                 void signInWithPasskey()
                   .then(() => toast.success('Signed in'))
-                  .catch(() => toast.error('No passkey was used. Sign in by email below.'))
+                  .catch(() =>
+                    toast.error(
+                      "No TaskPilot passkey was found. Sign in by email once, then choose 'Add a passkey'.",
+                    ),
+                  )
               }
             >
-              <KeyRound /> Sign in with a passkey
+              <KeyRound /> I have a passkey
             </Button>
             <p className="text-muted text-xs">
               Face ID, fingerprint, Windows Hello or your password manager. Works on any browser
