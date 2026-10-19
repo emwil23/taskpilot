@@ -1,24 +1,38 @@
-import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
-/** Only used to sign in to the free AI server. Tasks never leave the device. */
-export const supabase = url && anonKey ? createClient(url, anonKey) : null
+/** Sign-in for the free AI server is set up on this deployment. */
+export const supabaseConfigured = Boolean(url && anonKey)
+
+let client: Promise<SupabaseClient | null> | null = null
+
+/** Only used to sign in to the free AI server; tasks never leave the device. Loaded on first use. */
+export function getSupabase(): Promise<SupabaseClient | null> {
+  client ??=
+    url && anonKey
+      ? import('@supabase/supabase-js').then(({ createClient }) => createClient(url, anonKey))
+      : Promise.resolve(null)
+  return client
+}
 
 export async function getAccessToken(): Promise<string | null> {
-  const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } }
+  const sb = await getSupabase()
+  const { data } = (await sb?.auth.getSession()) ?? { data: { session: null } }
   return data.session?.access_token ?? null
 }
 
 export async function isAdult(): Promise<boolean> {
-  const { data } = (await supabase?.auth.getUser()) ?? { data: { user: null } }
+  const sb = await getSupabase()
+  const { data } = (await sb?.auth.getUser()) ?? { data: { user: null } }
   return (data.user?.user_metadata as { adult?: boolean } | undefined)?.adult === true
 }
 
 export async function sendMagicLink(email: string) {
-  if (!supabase) throw new Error('Sign-in is not set up.')
-  const { error } = await supabase.auth.signInWithOtp({
+  const sb = await getSupabase()
+  if (!sb) throw new Error('Sign-in is not set up.')
+  const { error } = await sb.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: `${location.origin}/settings` },
   })
@@ -26,6 +40,11 @@ export async function sendMagicLink(email: string) {
 }
 
 export async function confirmAdult() {
-  const { error } = (await supabase?.auth.updateUser({ data: { adult: true } })) ?? {}
+  const sb = await getSupabase()
+  const { error } = (await sb?.auth.updateUser({ data: { adult: true } })) ?? {}
   if (error) throw error
+}
+
+export async function signOut() {
+  await (await getSupabase())?.auth.signOut()
 }

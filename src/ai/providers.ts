@@ -1,6 +1,6 @@
 import { useSettings, type ProviderId } from '@/stores/settings'
 import { buildPrompt, type ActionInputs, type ActionName } from './actions'
-import { getAccessToken, isAdult, supabase } from './supabase'
+import { getAccessToken, isAdult, supabaseConfigured } from './supabase'
 
 export interface Provider {
   id: ProviderId
@@ -141,7 +141,7 @@ export const providers: Provider[] = [
     label: 'TaskPilot AI (free)',
     blurb:
       'Gemini through our server. Sign in by email; 30 calls a day. Not available in the EEA, UK or Switzerland, or under 18.',
-    offered: () => Boolean(API_URL && supabase) && !inBlockedRegion(),
+    offered: () => Boolean(API_URL) && supabaseConfigured && !inBlockedRegion(),
     ready: async () => Boolean(await getAccessToken()) && (await isAdult()),
     async *run(action, input, signal) {
       const token = await getAccessToken()

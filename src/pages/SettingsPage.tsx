@@ -1,6 +1,6 @@
 import { finishOpenRouterAuth, startOpenRouterAuth } from '@/ai/openrouter'
 import { inBlockedRegion, providers } from '@/ai/providers'
-import { confirmAdult, isAdult, sendMagicLink, supabase } from '@/ai/supabase'
+import { confirmAdult, getSupabase, isAdult, sendMagicLink, signOut } from '@/ai/supabase'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import { SHORTCUTS } from '@/hooks/useShortcuts'
@@ -222,14 +222,22 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
   const [adult, setAdult] = useState(false)
 
   useEffect(() => {
-    if (provider !== 'ew' || !supabase) return
-    const check = () => {
-      void supabase?.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)))
-      void isAdult().then(setAdult)
+    if (provider !== 'ew') return
+    let unsubscribe = () => {}
+    let live = true
+    void getSupabase().then((sb) => {
+      if (!sb || !live) return
+      // Fires once straight away with the current session, then on every sign-in or sign-out.
+      const { data } = sb.auth.onAuthStateChange((_event, session) => {
+        setSignedIn(Boolean(session))
+        void isAdult().then(setAdult)
+      })
+      unsubscribe = () => data.subscription.unsubscribe()
+    })
+    return () => {
+      live = false
+      unsubscribe()
     }
-    check()
-    const { data } = supabase.auth.onAuthStateChange(check)
-    return () => data.subscription.unsubscribe()
   }, [provider])
 
   if (provider === 'ew')
@@ -268,7 +276,7 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
         ) : adult ? (
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="text-go">Signed in. 30 free AI calls a day.</span>
-            <Button variant="ghost" size="sm" onClick={() => void supabase?.auth.signOut()}>
+            <Button variant="ghost" size="sm" onClick={() => void signOut()}>
               Sign out
             </Button>
           </div>

@@ -137,7 +137,7 @@ export function FlightPath({ animate }: { animate: boolean }) {
                   key={s.title}
                   className={cn(
                     'rounded-2xl border p-5 transition-all duration-500',
-                    on ? 'border-line bg-surface/80 opacity-100' : 'border-transparent opacity-35',
+                    on ? 'border-line bg-surface/80' : 'text-muted border-transparent',
                   )}
                 >
                   <div className="flex items-center gap-3">

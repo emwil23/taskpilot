@@ -1,4 +1,3 @@
-import { AppShell } from '@/components/AppShell'
 import { SiteLayout } from '@/components/SiteLayout'
 import { NotFound } from '@/pages/NotFound'
 import { useSettings, applyTheme } from '@/stores/settings'
@@ -39,7 +38,12 @@ function Root() {
 const root = createRootRoute({ component: Root, notFoundComponent: NotFound })
 
 const site = createRoute({ getParentRoute: () => root, id: 'site', component: SiteLayout })
-const shell = createRoute({ getParentRoute: () => root, id: 'shell', component: AppShell })
+// The app shell is lazy too, so the landing page doesn't download the app (chrono, cmdk, dnd-kit).
+const shell = createRoute({
+  getParentRoute: () => root,
+  id: 'shell',
+  component: lazyRouteComponent(() => import('@/components/AppShell'), 'AppShell'),
+})
 
 const sitePages = [
   createRoute({

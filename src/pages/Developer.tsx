@@ -1,6 +1,6 @@
+import { useReducedMotionSafe } from '@/lib/boot'
 import { Button } from '@/components/ui/button'
 import { ArrowUpRight, Globe } from 'lucide-react'
-import { useReducedMotion } from 'motion/react'
 
 const LINKS = [
   {
@@ -37,7 +37,7 @@ const STACK = [
 ]
 
 export function Developer() {
-  const reduce = useReducedMotion()
+  const reduce = useReducedMotionSafe()
   return (
     <div className="relative overflow-hidden">
       <div className="grid-lines pointer-events-none absolute inset-0 opacity-50" aria-hidden />

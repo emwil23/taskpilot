@@ -1,23 +1,29 @@
 import { Button } from '@/components/ui/button'
+import { prerendered, useReducedMotionSafe } from '@/lib/boot'
 import { cn } from '@/lib/cn'
 import { FlightPath } from '@/landing/FlightPath'
 import { useSmoothScroll } from '@/landing/useSmoothScroll'
 import { PLANS } from '@/pages/Pro'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, Check, CloudOff, Command, Compass, Mic, Sparkles, Wand2 } from 'lucide-react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 
 const Hero3D = lazy(() => import('@/landing/Hero3D'))
 
-/** WebGL only when it helps: wide screens, no reduced motion, no save-data, and WebGL available. */
-function useCan3D(reduce: boolean | null) {
+/** WebGL only when it helps: wide screens, a real GPU, no reduced motion and no save-data. */
+function useCan3D(reduce: boolean) {
   const [ok, setOk] = useState(false)
   useEffect(() => {
     if (reduce || !matchMedia('(min-width: 768px)').matches) return
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
     if (conn?.saveData) return
-    if (!document.createElement('canvas').getContext('webgl2')) return
+    const gl = document.createElement('canvas').getContext('webgl2')
+    if (!gl) return
+    // Software rendering (no GPU) would spin the CPU for a decoration; the video and text carry the hero.
+    const info = gl.getExtension('WEBGL_debug_renderer_info')
+    const renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : ''
+    if (/swiftshader|llvmpipe|software|basic render/i.test(renderer)) return
     // Wait until the page is idle so the 3D bundle never competes with the first paint.
     const id = requestIdleCallback(() => setOk(true), { timeout: 2500 })
     return () => cancelIdleCallback(id)
@@ -35,13 +41,13 @@ const fadeUp = {
 }
 
 export function Landing() {
-  const reduce = useReducedMotion()
+  const reduce = useReducedMotionSafe()
   const can3D = useCan3D(reduce)
   useSmoothScroll(!reduce)
 
   return (
     <>
-      <Hero can3D={can3D} reduce={Boolean(reduce)} />
+      <Hero can3D={can3D} reduce={reduce} />
       <FlightPath animate={!reduce} />
       <Bento />
       <AiSection />
@@ -98,28 +104,25 @@ function Hero({ can3D, reduce }: { can3D: boolean; reduce: boolean }) {
       <div className="relative mx-auto w-full max-w-6xl px-6">
         <motion.p
           custom={0}
-          initial="hidden"
+          initial={prerendered ? false : 'hidden'}
           animate="show"
           variants={fadeUp}
           className="hud border-line bg-bg/60 text-muted inline-flex items-center gap-2 rounded-full border px-3 py-1.5 backdrop-blur"
         >
           <span className="bg-go size-1.5 rounded-full" /> Free · offline · open source
         </motion.p>
-        <motion.h1
+        {/* Not animated: it is the LCP element and must paint straight from the prerendered HTML. */}
+        <h1
           id="hero-h"
-          custom={1}
-          initial="hidden"
-          animate="show"
-          variants={fadeUp}
           className="font-display mt-6 max-w-3xl text-[clamp(3rem,8vw,6.5rem)] leading-[0.95] font-semibold tracking-tight"
         >
           Your day,
           <br />
           <span className="text-accent">co-piloted.</span>
-        </motion.h1>
+        </h1>
         <motion.p
           custom={2}
-          initial="hidden"
+          initial={prerendered ? false : 'hidden'}
           animate="show"
           variants={fadeUp}
           className="text-muted mt-6 max-w-lg text-lg"
@@ -129,7 +132,7 @@ function Hero({ can3D, reduce }: { can3D: boolean; reduce: boolean }) {
         </motion.p>
         <motion.div
           custom={3}
-          initial="hidden"
+          initial={prerendered ? false : 'hidden'}
           animate="show"
           variants={fadeUp}
           className="mt-10 flex flex-wrap gap-3"
@@ -147,7 +150,7 @@ function Hero({ can3D, reduce }: { can3D: boolean; reduce: boolean }) {
         </motion.div>
         <motion.p
           custom={4}
-          initial="hidden"
+          initial={prerendered ? false : 'hidden'}
           animate="show"
           variants={fadeUp}
           className="hud text-muted mt-12 flex items-center gap-2"

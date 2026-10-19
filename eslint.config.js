@@ -20,7 +20,8 @@ export default tseslint.config(
       '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
     },
   },
-  { files: ['*.js'], ...tseslint.configs.disableTypeChecked },
+  { files: ['*.js', 'scripts/**'], ...tseslint.configs.disableTypeChecked },
+  { files: ['scripts/**'], languageOptions: { globals: globals.node } },
   // Fake async generators in tests don't need to await anything.
   { files: ['**/*.test.ts', '**/*.test.tsx'], rules: { '@typescript-eslint/require-await': 'off' } },
 )

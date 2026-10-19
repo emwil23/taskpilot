@@ -8,9 +8,21 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
+    {
+      // A copy of the plain index.html for the service worker's offline fallback. index.html itself gets
+      // prerendered landing content after the build (scripts/prerender.mjs), which /app must never show.
+      name: 'app-shell',
+      enforce: 'post',
+      generateBundle(_, bundle) {
+        const html = bundle['index.html']
+        if (html.type === 'asset')
+          this.emitFile({ type: 'asset', fileName: 'app.html', source: html.source })
+      },
+    },
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'script-defer',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'TaskPilot',
@@ -28,13 +40,15 @@ export default defineConfig({
         shortcuts: [{ name: 'Quick add', url: '/app/inbox?add=1' }],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,woff2,avif,webp,png}'],
-        // The hero video is large; let it stream from the network instead of precaching.
-        globIgnores: ['**/media/*.mp4', '**/media/*.webm'],
-        navigateFallback: '/index.html',
+        globPatterns: ['**/*.{js,css,svg,woff2,avif,webp,png}', 'app.html'],
+        // The hero video and the 3D bundle are landing-page extras; don't make every install download them.
+        globIgnores: ['**/media/*.mp4', '**/media/*.webm', '**/Hero3D-*.js'],
+        navigateFallback: '/app.html',
       },
     }),
   ],
+  // The lazy 3D hero chunk (three.js) is ~1 MB by itself; it loads after first paint, on wide screens only.
+  build: { chunkSizeWarningLimit: 1200 },
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   test: {
     environment: 'jsdom',

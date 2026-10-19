@@ -1,6 +1,6 @@
 import { Environment, Float, Lightformer, RoundedBox, Text } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Group } from 'three'
 
 const FONT = '/fonts/space-grotesk-latin-600-normal.woff'
@@ -101,46 +101,61 @@ function Rig({ children }: { children: React.ReactNode }) {
 }
 
 export default function Hero3D() {
+  const wrap = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(true)
+
+  // Stop rendering once the hero scrolls out of view.
+  useEffect(() => {
+    const el = wrap.current
+    if (!el) return
+    const io = new IntersectionObserver(([entry]) => setVisible(entry?.isIntersecting ?? false))
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   return (
-    <Canvas
-      className="!absolute inset-0"
-      dpr={[1, 1.75]}
-      camera={{ position: [0, 0, 7.5], fov: 45 }}
-      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      aria-hidden
-    >
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[4, 6, 5]} intensity={1.6} />
-      <Rig>
-        {TILES.map((t) => (
-          <Tile
-            key={t.title}
-            title={t.title}
-            time={t.time}
-            accent={'accent' in t}
-            position={t.pos}
-            rotation={t.rot}
+    <div ref={wrap} className="absolute inset-0">
+      <Canvas
+        frameloop={visible ? 'always' : 'never'}
+        className="!absolute inset-0"
+        dpr={[1, 1.75]}
+        camera={{ position: [0, 0, 7.5], fov: 45 }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        aria-hidden
+      >
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[4, 6, 5]} intensity={1.6} />
+        <Rig>
+          {TILES.map((t) => (
+            <Tile
+              key={t.title}
+              title={t.title}
+              time={t.time}
+              accent={'accent' in t}
+              position={t.pos}
+              rotation={t.rot}
+            />
+          ))}
+        </Rig>
+        {/* Studio light made from shapes, so no HDR file is downloaded. */}
+        <Environment resolution={128}>
+          <Lightformer form="rect" intensity={3} position={[0, 4, 4]} scale={[8, 2, 1]} />
+          <Lightformer
+            form="rect"
+            intensity={2}
+            color="#ff6b3d"
+            position={[-5, 0, 2]}
+            scale={[2, 6, 1]}
           />
-        ))}
-      </Rig>
-      {/* Studio light made from shapes, so no HDR file is downloaded. */}
-      <Environment resolution={128}>
-        <Lightformer form="rect" intensity={3} position={[0, 4, 4]} scale={[8, 2, 1]} />
-        <Lightformer
-          form="rect"
-          intensity={2}
-          color="#ff6b3d"
-          position={[-5, 0, 2]}
-          scale={[2, 6, 1]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={2}
-          color="#7cc4ff"
-          position={[5, 0, 2]}
-          scale={[2, 6, 1]}
-        />
-      </Environment>
-    </Canvas>
+          <Lightformer
+            form="rect"
+            intensity={2}
+            color="#7cc4ff"
+            position={[5, 0, 2]}
+            scale={[2, 6, 1]}
+          />
+        </Environment>
+      </Canvas>
+    </div>
   )
 }
