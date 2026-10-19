@@ -1,5 +1,5 @@
 import { finishOpenRouterAuth, openRouterPending, startOpenRouterAuth } from '@/ai/openrouter'
-import { inBlockedRegion, providers } from '@/ai/providers'
+import { inBlockedRegion, loadPuter, providers } from '@/ai/providers'
 import {
   addPasskey,
   confirmAdult,
@@ -444,6 +444,8 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
       </div>
     )
 
+  if (provider === 'puter') return <PuterSetup />
+
   if (provider === 'openrouter')
     return (
       <div className="border-line mt-6 flex max-w-lg flex-col gap-3 rounded-2xl border p-4">
@@ -497,4 +499,69 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
     )
 
   return null
+}
+
+/** Puter runs the model on the user's own free Puter account; sign-in must start from a click (it's a popup). */
+function PuterSetup() {
+  const [state, setState] = useState<'loading' | 'out' | 'in' | 'error'>('loading')
+  const [user, setUser] = useState('')
+
+  useEffect(() => {
+    let live = true
+    loadPuter()
+      .then(async () => {
+        if (!live || !window.puter) return
+        if (window.puter.auth.isSignedIn()) {
+          setUser((await window.puter.auth.getUser()).username)
+          setState('in')
+        } else setState('out')
+      })
+      .catch(() => live && setState('error'))
+    return () => {
+      live = false
+    }
+  }, [])
+
+  async function connect() {
+    try {
+      await window.puter?.auth.signIn()
+      setUser((await window.puter?.auth.getUser())?.username ?? '')
+      setState('in')
+      toast.success('Puter connected')
+    } catch {
+      toast.error('Puter sign-in was closed or blocked. Allow pop-ups for this site and try again.')
+    }
+  }
+
+  return (
+    <div className="border-line mt-6 flex max-w-lg flex-col gap-3 rounded-2xl border p-4 text-sm">
+      {state === 'loading' && <p className="text-muted">Loading Puter…</p>}
+      {state === 'error' && (
+        <p className="text-danger">Puter couldn't load. Check your connection or ad blocker.</p>
+      )}
+      {state === 'out' && (
+        <>
+          <p>Connect a free Puter account. It opens Puter's sign-in in a small window.</p>
+          <Button variant="primary" className="self-start" onClick={() => void connect()}>
+            Connect Puter
+          </Button>
+        </>
+      )}
+      {state === 'in' && (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-go">Connected to Puter{user && ` as ${user}`}.</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              window.puter?.auth.signOut()
+              setState('out')
+            }}
+          >
+            Disconnect
+          </Button>
+        </div>
+      )}
+    </div>
+  )
 }
