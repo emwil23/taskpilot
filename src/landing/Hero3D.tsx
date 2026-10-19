@@ -97,7 +97,11 @@ function Rig({ children }: { children: React.ReactNode }) {
     g.rotation.y += (pointer.x * 0.25 - g.rotation.y) * Math.min(1, delta * 3)
     g.rotation.x += (-pointer.y * 0.15 - g.rotation.x) * Math.min(1, delta * 3)
   })
-  return <group ref={group}>{children}</group>
+  return (
+    <group ref={group} scale={0.82} position={[-0.3, 0, 0]}>
+      {children}
+    </group>
+  )
 }
 
 export default function Hero3D() {

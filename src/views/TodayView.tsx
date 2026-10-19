@@ -47,7 +47,7 @@ export function TodayView() {
       {tasks.length > 0 && <WhatNow />}
 
       {overdue.length > 0 && (
-        <section className="mb-8" aria-labelledby="overdue-h">
+        <section className="mb-4" aria-labelledby="overdue-h">
           <h2 id="overdue-h" className="hud text-danger mb-2">
             Overdue · {overdue.length}
           </h2>
