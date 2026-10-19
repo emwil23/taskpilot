@@ -23,6 +23,9 @@ export async function startOpenRouterAuth() {
   location.assign(`https://openrouter.ai/auth?${params.toString()}`)
 }
 
+/** True while an OpenRouter sign-in started here is waiting for its callback. */
+export const openRouterPending = () => sessionStorage.getItem(VERIFIER) !== null
+
 /** Call on the callback page. Returns true if a key was saved. */
 export async function finishOpenRouterAuth(code: string): Promise<boolean> {
   const verifier = sessionStorage.getItem(VERIFIER)

@@ -1,4 +1,4 @@
-import { finishOpenRouterAuth, startOpenRouterAuth } from '@/ai/openrouter'
+import { finishOpenRouterAuth, openRouterPending, startOpenRouterAuth } from '@/ai/openrouter'
 import { inBlockedRegion, providers } from '@/ai/providers'
 import { confirmAdult, getSupabase, isAdult, sendMagicLink, signOut } from '@/ai/supabase'
 import { PageHeader } from '@/components/PageHeader'
@@ -36,7 +36,8 @@ export function SettingsPage() {
   // Back from OpenRouter's consent screen with ?code=...
   useEffect(() => {
     const code = new URLSearchParams(location.search).get('code')
-    if (!code) return
+    // Supabase's email link also lands here with ?code=; leave that one for Supabase to exchange.
+    if (!code || !openRouterPending()) return
     history.replaceState(null, '', location.pathname + location.hash)
     finishOpenRouterAuth(code)
       .then((ok) => ok && toast.success('OpenRouter connected'))
