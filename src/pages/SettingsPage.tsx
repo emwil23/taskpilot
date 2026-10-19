@@ -192,6 +192,8 @@ export function SettingsPage() {
           </Button>
         </div>
       </Section>
+
+      <p className="hud text-muted pt-8">TaskPilot build {__BUILD__}</p>
     </>
   )
 }

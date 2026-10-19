@@ -1,11 +1,22 @@
 /// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Shown at the bottom of Settings, so anyone can tell which build they're on.
+const build = (() => {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim()
+  } catch {
+    return 'dev'
+  }
+})()
+
 export default defineConfig({
+  define: { __BUILD__: JSON.stringify(`${build} · ${new Date().toISOString().slice(0, 10)}`) },
   plugins: [
     react(),
     {
