@@ -1,0 +1,107 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Palette from docs/design-brief.md. Dark is the default; light overrides below. */
+:root,
+[data-theme='dark'] {
+  --bg: #0d1017;
+  --surface: #151a23;
+  --surface-2: #1c2230;
+  --line: #252c38;
+  --text: #e9ecee;
+  --muted: #9aa4b2;
+  --accent: #ff6b3d;
+  --accent-ink: #1a0a04;
+  --sky: #7cc4ff;
+  --go: #4ade9a;
+  --danger: #ff7a7a;
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #eeece6;
+  --line: #dedbd2;
+  --text: #13161c;
+  --muted: #556070;
+  --accent: #c2410c;
+  --accent-ink: #ffffff;
+  --sky: #0b6bb8;
+  --go: #15803d;
+  --danger: #b91c1c;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-sky: var(--sky);
+  --color-go: var(--go);
+  --color-danger: var(--danger);
+  --font-display: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply font-sans;
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 35%, transparent);
+  }
+}
+
+@utility hud {
+  @apply font-mono text-[11px] tracking-[0.14em] uppercase;
+}
+
+/* Drafting-style grid used behind the landing sections. */
+@utility grid-lines {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
