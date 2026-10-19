@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskPilot: the AI co-pilot for your day</title>
+    <meta
+      name="description"
+      content="A keyboard-first, offline task manager with natural-language quick add, a board, a calendar, an Eisenhower matrix, focus mode and an AI co-pilot that plans your day."
+    />
+    <meta name="theme-color" content="#0D1017" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:title" content="TaskPilot: the AI co-pilot for your day" />
+    <meta
+      property="og:description"
+      content="Plan, focus and finish. Offline, keyboard-first, with an AI co-pilot."
+    />
+    <meta property="og:image" content="/media/og.jpg" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Set the theme before first paint so there is no flash.
+      try {
+        const s = JSON.parse(localStorage.getItem('taskpilot-settings') || '{}').state || {}
+        const t = s.theme || 'system'
+        const dark =
+          t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
