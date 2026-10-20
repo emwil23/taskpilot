@@ -13,15 +13,21 @@ const shell = await readFile(new URL('shell/index.html', dist), 'utf8')
 // Cloudflare Pages serves 404.html for unknown paths; the router renders the 404 page into it.
 await writeFile(new URL('404.html', dist), shell)
 
-// The page is fully readable from the HTML, so start the app's JS just after the first frame is painted
-// instead of competing with it. Hydration then attaches to the same DOM.
+// The page is fully readable from the HTML, so the app's JS waits instead of competing with first paint.
+// Hydration then attaches to the same DOM.
 const entry = shell.match(/<script type="module" crossorigin src="([^"]+)"><\/script>/)?.[1]
 if (!entry) throw new Error('Entry script not found in shell/index.html')
+// Inline the one stylesheet (~12 kB gzipped): a separate request costs a round trip before first paint.
+const cssHref = shell.match(/<link rel="stylesheet" crossorigin href="([^"]+)">/)?.[1]
+if (!cssHref) throw new Error('Stylesheet not found in shell/index.html')
+const css = await readFile(new URL(`.${cssHref}`, dist), 'utf8')
 const template = shell
+  .replace(/<link rel="stylesheet" crossorigin href="[^"]+">/, () => `<style>${css}</style>`)
   .replace(/\s*<link rel="modulepreload"[^>]*>/g, '')
   .replace(
     /<script type="module" crossorigin src="[^"]+"><\/script>/,
-    `<script type="module">requestAnimationFrame(() => requestAnimationFrame(() => import('${entry}')))</script>`,
+    // After `load`: fonts and the hero image finish first, and the app's JS never competes with first paint.
+    `<script type="module">const go = () => import('${entry}'); document.readyState === 'complete' ? go() : addEventListener('load', go, { once: true })</script>`,
   )
 
 const server = await preview({ preview: { port: 4179, strictPort: true }, logLevel: 'silent' })
