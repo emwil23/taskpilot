@@ -276,7 +276,7 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
                   .then(() => toast.success('Signed in'))
                   .catch(() =>
                     toast.error(
-                      "No TaskPilot passkey was found. Sign in by email once, then choose 'Add a passkey'.",
+                      "No EWSTUDIOS passkey was found. Sign in by email once, then choose 'Add a passkey'.",
                     ),
                   )
               }
@@ -284,8 +284,8 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
               <KeyRound /> I have a passkey
             </Button>
             <p className="text-muted text-xs">
-              New here? Sign in below first, then add a passkey (Face ID, fingerprint, Windows Hello
-              or a password manager) to skip the email next time.
+              Works with a passkey from any EWSTUDIOS app. New here? Sign in below first, then add a
+              passkey (Face ID, fingerprint, Windows Hello or a password manager).
             </p>
           </div>
         )}
@@ -400,8 +400,8 @@ function ProviderSetup({ provider }: { provider: ProviderId | null }) {
             )}
             {Boolean(passkeys) && (
               <p className="text-muted">
-                {passkeys} passkey{passkeys === 1 ? '' : 's'} saved. Use it to sign in on any
-                browser.
+                {passkeys} passkey{passkeys === 1 ? '' : 's'} saved. It works in every EWSTUDIOS
+                app.
               </p>
             )}
           </div>
