@@ -6,7 +6,7 @@
 
 A keyboard-first task manager that works offline. Type a task the way you'd say it, let the co-pilot time-block your calendar, then work through it in focus sessions. Your tasks never leave your browser.
 
-**[taskpilot-dbc.pages.dev](https://taskpilot-dbc.pages.dev)** · [The shared API](https://github.com/emwil23/ew-apps-api)
+**[taskpilot.ewstudios.workers.dev](https://taskpilot.ewstudios.workers.dev)** · [The shared API](https://github.com/emwil23/ew-apps-api)
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square)
@@ -116,7 +116,7 @@ flowchart LR
     B[vite build] --> PR[scripts/prerender.mjs<br/>headless Chromium]
     PR -->|"/?prerender"| RS[renderToString<br/>in the page]
     RS --> H[dist/*/index.html<br/>with Suspense markers]
-    H --> CF[Cloudflare Pages]
+    H --> CF[Cloudflare Worker<br/>static assets]
     CF --> FP[First paint<br/>from HTML]
     FP -->|after 2 frames| HY[hydrateRoot]
     CF -->|"/app/*"| SH[shell/index.html<br/>createRoot]
@@ -155,7 +155,7 @@ npm test
 npm run e2e
 ```
 
-Node 24. Copy `.env.example` to `.env` to point at the shared API and Supabase; without them, the app runs fully offline and offers the other AI providers. `npm run build` also prerenders the public pages, so it needs Playwright's Chromium (`npx playwright install chromium`). `npm run e2e` builds and serves the app with the same routing as Cloudflare Pages (`serve.json` mirrors `public/_redirects`) and runs the flows, plus axe on every page in both themes. CI adds lint, typecheck and Lighthouse (≥ 0.95 on every category).
+Node 24. Copy `.env.example` to `.env` to point at the shared API and Supabase; without them, the app runs fully offline and offers the other AI providers. `npm run build` also prerenders the public pages, so it needs Playwright's Chromium (`npx playwright install chromium`). `npm run e2e` builds and serves the app with the same routing as the live Worker (`serve.json` mirrors `public/_redirects`) and runs the flows, plus axe on every page in both themes. CI adds lint, typecheck and Lighthouse (≥ 0.95 on every category). Deploy with `npm run build && npx wrangler deploy` (config in `wrangler.jsonc`).
 
 `node scripts/screenshots.mjs` retakes the pictures in `docs/` with sample data, against a running build on port 4173.
 
